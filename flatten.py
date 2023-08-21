@@ -13,6 +13,6 @@ class Flatten:
 
         return flattened_output
 
-    def backward(self, d_out):
-        d_input = d_out.reshape(self.original_shape)
+    def backward(self, d_input):
+        d_input = d_input.reshape(self.original_shape)
         return d_input

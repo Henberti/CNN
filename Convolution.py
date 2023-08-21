@@ -5,14 +5,13 @@ from concurrent.futures import ThreadPoolExecutor
 
 class Conv2:
     
-    def __init__(self,n_filters, filter_shape=(3,3), stride=1, learning_rate=0.1):
+    def __init__(self,n_filters, filter_shape=(3,3), stride=1):
         self.n_filters = n_filters
         self.kernels = he_normal((n_filters, )+filter_shape)
         self.biases = np.zeros(n_filters)
         self.stride = stride
         self.inputs = None
         self.kernel_shape = filter_shape
-        self.learning_rate = learning_rate
         
     
     def forward(self, inputs):
@@ -67,8 +66,9 @@ class Conv2:
                 start, end, d_output_subset = future.result()
                 self.inputs[start:end] = d_output_subset
                 
-        self.update(d_bias, d_kernel)
-        self.inputs = d_output
+        self.d_bias = d_bias
+        self.d_kernel = d_kernel
+                
                 
         return d_output
     
@@ -97,11 +97,6 @@ class Conv2:
                 
         return start_idx, end_idx, d_output
                 
-                
-               
-    def update(self,d_bias, d_kernel):
-        self.biases = self.biases - self.learning_rate * d_bias
-        self.kernels = self.kernels - self.learning_rate * d_kernel
         
         
     
