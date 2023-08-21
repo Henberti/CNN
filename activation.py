@@ -11,3 +11,5 @@ class Relu:
     def backward(self, d_input):
         d_input[self.output <= 0] = 0
         return d_input
+    
+    

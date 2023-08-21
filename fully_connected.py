@@ -1,8 +1,6 @@
 import numpy as np
 from functions import he_normal
 
-
-
 class Dense:
 
 

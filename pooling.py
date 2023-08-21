@@ -1,7 +1,6 @@
 import numpy as np
 from scipy.ndimage import maximum_filter
-from concurrent.futures import ThreadPoolExecutor
-
+import main
 
 class MaxPool:
     
@@ -12,69 +11,35 @@ class MaxPool:
     
     def forward(self,input):
         self.input = input
-        batch_size, channel_size = input.shape[:2]
-        split_size = batch_size // 4
+       
+        out_mat_shape = (((input.shape[2]-self.filter_size) // self.filter_size)+1)
+        outputs = np.zeros((input.shape[0],out_mat_shape,out_mat_shape))
+        print(input.shape)
+        print(outputs.shape)
         
-        out_mat_shape = (((input.shape[3]-self.filter_size) // self.filter_size)+1)
-        outputs = np.zeros((batch_size,channel_size,out_mat_shape,out_mat_shape))
+        for idx, image in enumerate(input):
+            outputs[idx] = maximum_filter(image, size=2)[::2,::2]
         
-        with ThreadPoolExecutor(max_workers=4) as executor:
-            future_results = [executor.submit(self.max_pooling, i, min(i + split_size, batch_size),out_mat_shape ) for i in range(0, batch_size, split_size)]
-            
-            for future in future_results:
-                start, end, result = future.result()
-                outputs[start:end] = result
-                
         return outputs
         
-         
-        
-    def max_pooling(self, start_idx, end_idx, out_mat_shape):
-        output = np.zeros((end_idx-start_idx, self.input.shape[1], out_mat_shape, out_mat_shape))
-        for batch_idx in range(start_idx, end_idx):
-            image = self.input[batch_idx]
-            for channel_idx, filtered_image in enumerate(image):
-                output[batch_idx - start_idx, channel_idx] = maximum_filter(filtered_image, size=self.filter_size)[::self.filter_size, ::self.filter_size]
-        
-        return start_idx, end_idx, output
         
         
         
-    def backward(self, dout):
-        dinput = np.zeros_like(self.input)
-        batch_size, channel_size, _, _ = self.input.shape
+    def backward(self, dL_dout):
+        dL_dinput = np.zeros_like(self.input)
 
-        split_size = batch_size // 4
-
-        with ThreadPoolExecutor(max_workers=4) as executor:
-            future_results = [executor.submit(self.maxpool_backward_slice, i, min(i + split_size, batch_size), dout) for i in range(0, batch_size, split_size)]
-            
-            for future in future_results:
-                start, end, result = future.result()
-                dinput[start:end] = result
-
-        return dinput
-
-    def maxpool_backward_slice(self, start_idx, end_idx, dout):
-        dinput_slice = np.zeros((end_idx - start_idx, *self.input.shape[1:]))
-        
-        for batch_idx in range(start_idx, end_idx):
-            for channel_idx in range(self.input.shape[1]):
-                
-                image = self.input[batch_idx, channel_idx]
-                dout_slice = dout[batch_idx, channel_idx]
-
-                for i in range(0, image.shape[0], self.filter_size):
-                    for j in range(0, image.shape[1], self.filter_size):
-                        
-                        slice_ = image[i:i+self.filter_size, j:j+self.filter_size]
-                        
+        pool_size = self.filter_size
+        for n in range(main.N_SAMPLES):
+            for i in range(0, self.input.shape[1], pool_size):
+                for j in range(0, self.input.shape[2], pool_size):
                     
-                        mask = (slice_ == np.max(slice_))
-                        
-                        
-                        dinput_slice[batch_idx - start_idx, channel_idx, i:i+self.filter_size, j:j+self.filter_size] += mask * dout_slice[i // self.filter_size, j // self.filter_size]
-        
-        return start_idx, end_idx, dinput_slice
+                    window = self.input[n, i:i+pool_size, j:j+pool_size]
+             
+                    max_pos = np.unravel_index(window.argmax(), window.shape)
+                 
+                    dL_dinput[n, i + max_pos[0], j + max_pos[1]] = dL_dout[n, i//pool_size, j//pool_size]
+                    
+        return dL_dinput
+
 
         
