@@ -21,7 +21,7 @@ class Conv2:
         out_mat_shape = tuple([(inputs.shape[x+1] - self.kernel_shape[x]) // self.stride + 1 for x in range(2)])
         outputs = np.zeros((inputs.shape[0] * self.n_filters, *out_mat_shape))
         idx = 0
-        print(outputs.shape)
+
         
         for image in self.inputs:
             for ker_idx, kernel in enumerate(self.kernels):

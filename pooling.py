@@ -14,9 +14,7 @@ class MaxPool:
        
         out_mat_shape = (((input.shape[2]-self.filter_size) // self.filter_size)+1)
         outputs = np.zeros((input.shape[0],out_mat_shape,out_mat_shape))
-        print(input.shape)
-        print(outputs.shape)
-        
+
         for idx, image in enumerate(input):
             outputs[idx] = maximum_filter(image, size=2)[::2,::2]
         

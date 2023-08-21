@@ -14,16 +14,19 @@ class Dense:
     def forward(self, inputs):
         if self.inputs is None:
             self.weigth = he_normal((inputs.shape[1], self.n_neuron))
+            print("1")
             self.bias = np.zeros((1,self.n_neuron))
+            print("2")
         
         self.inputs = inputs
         
-        return np.dot(input, self.weigth) + self.bias
+        
+        return np.dot(inputs, self.weigth) + self.bias
     
     def backward(self, d_input):
-        dweights = np.dot(self.inputs.T, d_input)
-        dbiases = np.sum(d_input, axis=0, keepdims=True)
-        return np.dot(d_input, self.weights.T)
+        self.dweights = np.dot(self.inputs.T, d_input)
+        self.dbiases = np.sum(d_input, axis=0, keepdims=True)
+        return np.dot(d_input, self.weigth.T)
     
     
         
