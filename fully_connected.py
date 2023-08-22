@@ -2,34 +2,58 @@ import numpy as np
 from functions import he_normal
 
 class Dense:
-
-
-    def __init__(self, n_neuron):
-        self.n_neuron = n_neuron
-        self.inputs = None
-        self.weigth = None
-        self.bias = None
-        
-    
+# Layer initialization
+    def __init__(self, n_neurons, weight_regularizer_l1=0, weight_regularizer_l2=0,bias_regularizer_l1=0, bias_regularizer_l2=0):
+    # Initialize weights and biases
+        self.weights = None
+        self.biases = None
+        # Set regularization strength
+        self.n_neurons = n_neurons
+        self.weight_regularizer_l1 = weight_regularizer_l1
+        self.weight_regularizer_l2 = weight_regularizer_l2
+        self.bias_regularizer_l1 = bias_regularizer_l1
+        self.bias_regularizer_l2 = bias_regularizer_l2
+        # Forward pass
     def forward(self, inputs):
-        if self.inputs is None:
-            self.weigth = he_normal((inputs.shape[1], self.n_neuron))
-            print("1")
-            self.bias = np.zeros((1,self.n_neuron))
-            print("2")
+        if self.weights is None:
+            self.weights = 0.01 * np.random.randn(inputs.shape[1], self.n_neurons)
+            self.biases = np.zeros((1, self.n_neurons))
         
+        # Remember input values
         self.inputs = inputs
+        # Calculate output values from inputs, weights and biases
+        self.output = np.dot(inputs, self.weights) + self.biases
         
-        
-        return np.dot(inputs, self.weigth) + self.bias
+        return self.output
     
-    def backward(self, d_input):
-        self.dweights = np.dot(self.inputs.T, d_input)
-        self.dbiases = np.sum(d_input, axis=0, keepdims=True)
-        return np.dot(d_input, self.weigth.T)
-    
-    
-        
+    def backward(self, dvalues):
+        # Gradients on parameters
+        self.dweights = np.dot(self.inputs.T, dvalues)
+        self.dbiases = np.sum(dvalues, axis=0, keepdims=True)
+        # Gradients on regularization
+        # L1 on weights
+        if self.weight_regularizer_l1 > 0:
+            dL1 = np.ones_like(self.weights)
+            dL1[self.weights < 0] = -1
+            self.dweights += self.weight_regularizer_l1 * dL1
+        # L2 on weights
+        if self.weight_regularizer_l2 > 0:
+            self.dweights += 2 * self.weight_regularizer_l2 * \
+            self.weights
+            # L1 on biases
+        if self.bias_regularizer_l1 > 0:
+            dL1 = np.ones_like(self.biases)
+            dL1[self.biases < 0] = -1
+            self.dbiases += self.bias_regularizer_l1 * dL1
+            # L2 on biases
+        if self.bias_regularizer_l2 > 0:
+            self.dbiases += 2 * self.bias_regularizer_l2 * \
+            self.biases
+            # Gradient on values
+        self.dinputs = np.dot(dvalues, self.weights.T)
+            
+        return self.dinputs
+            
         
             
             
