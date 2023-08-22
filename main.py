@@ -22,7 +22,7 @@ class Cnn:
         dataset = inputs / 255
         self.inputs = self.augment_images(dataset)
         modify_samples(inputs.shape[0])
-        self.conv = Conv2(6)
+        self.conv = Conv2(8)
         self.relu = Relu()
         self.pool = MaxPool()
         self.flatten = Flatten()
@@ -35,7 +35,7 @@ class Cnn:
         self.optimizer = Optimizer_Adam(learning_rate=0.02, decay=5e-7)
         self.conv2 = Conv2(6, filter_shape=(2,2))
         self.relu2 = Relu()
-        # self.pool2 = MaxPool()
+        self.pool2 = MaxPool()
         
         
         
@@ -49,7 +49,7 @@ class Cnn:
             outputs = self.pool.forward(outputs)
             outputs = self.conv2.forward(outputs)
             outputs = self.relu2.forward(outputs)
-            # outputs = self.pool2.forward(outputs)
+            outputs = self.pool2.forward(outputs)
             outputs = self.flatten.forward(outputs)
             outputs = self.dense1.forward(outputs)
             outputs = self.activation1.forward(outputs)
@@ -71,7 +71,7 @@ class Cnn:
             outputs = self.activation1.backward(outputs)
             outputs = self.dense1.backward(outputs)
             outputs = self.flatten.backward(outputs)
-            # outputs = self.pool2.backward(outputs)
+            outputs = self.pool2.backward(outputs)
             outputs = self.relu2.backward(outputs)
             outputs = self.conv2.backward(outputs)
             outputs = self.pool.backward(outputs)
@@ -92,7 +92,7 @@ class Cnn:
         outputs = self.pool.forward(outputs)
         outputs = self.conv2.forward(outputs)
         outputs = self.relu2.forward(outputs)
-        # outputs = self.pool2.forward(outputs)
+        outputs = self.pool2.forward(outputs)
         outputs = self.flatten.forward(outputs)
         outputs = self.dense1.forward(outputs)
         outputs = self.activation1.forward(outputs)
