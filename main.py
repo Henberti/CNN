@@ -60,10 +60,10 @@ class Cnn:
                 self.loss_activation.loss.regularization_loss(self.dense1) + \
                 self.loss_activation.loss.regularization_loss(self.dense2)
             loss = outputs + regularization_loss
-            print(f"loss={outputs}")
+            print(f"loss={loss}")
             # print(self.loss_activation.output)
             predictions = np.argmax(self.loss_activation.output, axis=1)
-            print(predictions)
+            # print(predictions)
             print(np.mean(predictions == self.y_true))
             self.loss_activation.backward(self.loss_activation.output, self.y_true)
             outputs = self.loss_activation.dinputs
